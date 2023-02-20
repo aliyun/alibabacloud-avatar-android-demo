@@ -11,6 +11,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,18 +37,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView accessKeySecretTxt;
     private TextView tenantIdTxt;
     private TextView appIdTxt;
+    private Button btnToggleConfig;
 
     private AvatarInstanceClient client;
     private String sessionId;
     private RadioGroup rgAvatarType;
-    private RadioButton rbDialog, rbBroadcast, rbAecRtc, rbAecSystem, rbAecNone, rbSample8k, rbSample16k;
+    private RadioButton rbDialog, rbBroadcast, rbAecRtc, rbAecSystem, rbAecNone, rbSample8k, rbSample16k, rbGreenBgTure, rbGreenBgFalse;
     private CheckBox cbAutoStartRecord, cbAutoDodge, cbCustomSource;
     private ConstraintLayout clInitConfig;
     private EditText etInterval;
+    private ScrollView scrollView;
+    private ConstraintLayout clGreenBg;
 
     private AvatarInstanceRequest request;
 
-    private boolean isAutostartRecord, isAutoDodge, isCustomSource;
+    private boolean isAutostartRecord, isAutoDodge, isCustomSource, isGreenBg;
     private int sampleRate, aecConfig, interval;
 
     @Override
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        aecConfig= AvatarOptions.AEC_SYSTEM;
+        aecConfig = AvatarOptions.AEC_SYSTEM;
         sampleRate = AvatarOptions.SAMPLE_RATE_16K;
         AvatarInstanceResponse response = InstanceSharedPref.loadInstanceResponse(getApplicationContext());
         if (!StringUtils.isEmpty(response.getAccessKeyId()) &&
@@ -72,6 +76,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!StringUtils.isEmpty(response.getAccessKeyId())) {
             queryInstance(response);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (TextUtils.isEmpty(sessionId)) {
+            return;
+        }
+        client.stopInstance(this.sessionId);
     }
 
     private void initView() {
@@ -93,9 +106,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rbAecSystem = findViewById(R.id.rb_aec_system);
         rbSample8k = findViewById(R.id.rb_sample_8k);
         rbSample16k = findViewById(R.id.rb_sample_16k);
+        rbGreenBgTure = findViewById(R.id.rb_green_bg_true);
+        rbGreenBgFalse = findViewById(R.id.rb_green_bg_false);
         cbAutoStartRecord = findViewById(R.id.cb_auto_start);
         cbAutoDodge = findViewById(R.id.cb_auto_douge);
         cbCustomSource = findViewById(R.id.cb_custom_source);
+        clGreenBg = findViewById(R.id.cl_greenbg);
 
         rbDialog.setOnCheckedChangeListener(this);
         rbBroadcast.setOnCheckedChangeListener(this);
@@ -107,11 +123,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cbAutoStartRecord.setOnCheckedChangeListener(this);
         cbAutoDodge.setOnCheckedChangeListener(this);
         cbCustomSource.setOnCheckedChangeListener(this);
+        rbGreenBgTure.setOnCheckedChangeListener(this);
+        rbGreenBgFalse.setOnCheckedChangeListener(this);
 
         clInitConfig = findViewById(R.id.cl_config);
         etInterval = findViewById(R.id.et_interval);
+        btnToggleConfig = findViewById(R.id.btn_toggle_config);
+        btnToggleConfig.setOnClickListener(this);
+        scrollView = findViewById(R.id.scrollView);
     }
 
+    /**
+     * 查询运行中的实例，调用OpenApi 接口，仅供快速体验，不建议在实际项目中使用这种调用方式。
+     * @param response
+     */
     private void queryInstance(AvatarInstanceResponse response) {
         String accessKeyId = TextUtils.isEmpty(accessKeyIdTxt.getText().toString()) ? response.getAccessKeyId() : accessKeyIdTxt.getText().toString();
         String accessKeySecret = TextUtils.isEmpty(accessKeySecretTxt.getText().toString()) ? response.getAccessKeySecret() : accessKeySecretTxt.getText().toString();
@@ -151,54 +176,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         client.queryInstance(accessKeyId, accessKeySecret, appId, tenantId);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (TextUtils.isEmpty(sessionId)) {
-            return;
-        }
-        client.stopInstance(this.sessionId);
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_start: {
-                String accessKeyId = accessKeyIdTxt.getText().toString();
-                String accessKeySecret = accessKeySecretTxt.getText().toString();
-                Long tenantId = StringUtils.isEmpty(tenantIdTxt.getText().toString()) ? 0 : Long.parseLong(tenantIdTxt.getText().toString());
-                String appId = appIdTxt.getText().toString();
-//				String env = rbProd.isChecked() ? "PROD" : "PRE";
-                String env = "PROD";
-                request = new AvatarInstanceRequest();
-                request.setAccessKeyId(accessKeyId);
-                request.setAccessKeySecret(accessKeySecret);
-                request.settenantId(tenantId);
-                request.setAppId(appId);
-                request.setEnv(env);
-                client = new AvatarInstanceClient(this, request);
-                client.setEventCallback(this);
-                client.startInstance();
-                break;
-            }
-            case R.id.btn_stop: {
-                if (TextUtils.isEmpty(sessionId)) {
-                    showToast("sessionId为空，请先查询执行Query Instance");
-                    return;
-                }
-                client.stopInstance(this.sessionId);
-                break;
-            }
-            case R.id.btn_query:
-                AvatarInstanceResponse response = InstanceSharedPref.loadInstanceResponse(getApplicationContext());
-                queryInstance(response);
-            default:
-                break;
-        }
-    }
-
-
+    /**
+     * 创建云上数字人应用实例，调用OpenApi 接口，仅供快速体验，不建议在实际项目中使用这种调用方式。
+     * @param response
+     */
     @Override
     public void onStartInstance(AvatarInstanceResponse response) {
         if (response.getStatusCode() != 200 || response.getSuccess() == null || !response.getSuccess()) {
@@ -218,6 +200,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    /**
+     * 销毁云上数字人应用实例，调用OpenApi 接口，仅供快速体验，不建议在实际项目中使用这种调用方式。
+     * @param response
+     */
     @Override
     public void onStopInstance(AvatarInstanceResponse response) {
         if (response.getStatusCode() != 200 || response.getSuccess() == null || !response.getSuccess()) {
@@ -233,6 +219,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stopBtn.setEnabled(false);
     }
 
+    /**
+     * 查询云上数字人应用实例，调用OpenApi 接口，仅供快速体验，不建议在实际项目中使用这种调用方式。
+     * @param response
+     */
     @Override
     public void onQueryInstance(AvatarInstanceResponse response) {
         if (response.getStatusCode() != 200 || response.getSuccess() == null || !response.getSuccess()) {
@@ -265,8 +255,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra("sampleRate", sampleRate);
         intent.putExtra("isAutoStartRecord", isAutostartRecord);
         intent.putExtra("isAutoDodge", isAutoDodge);
-        intent.putExtra("interval",TextUtils.isEmpty(etInterval.getText())? 100: Integer.parseInt(etInterval.getText().toString()));
+        intent.putExtra("interval", TextUtils.isEmpty(etInterval.getText()) ? 100 : Integer.parseInt(etInterval.getText().toString()));
         intent.putExtra("isCustomSource", false);
+        intent.putExtra("isGreenBg", isGreenBg);
         startActivity(intent);
     }
 
@@ -275,14 +266,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_start: {
+                String accessKeyId = accessKeyIdTxt.getText().toString();
+                String accessKeySecret = accessKeySecretTxt.getText().toString();
+                Long tenantId = StringUtils.isEmpty(tenantIdTxt.getText().toString()) ? 0 : Long.parseLong(tenantIdTxt.getText().toString());
+                String appId = appIdTxt.getText().toString();
+//				String env = rbProd.isChecked() ? "PROD" : "PRE";
+                String env = "PROD";
+                request = new AvatarInstanceRequest();
+                request.setAccessKeyId(accessKeyId);
+                request.setAccessKeySecret(accessKeySecret);
+                request.settenantId(tenantId);
+                request.setAppId(appId);
+                request.setEnv(env);
+                request.setAlphaSwitch(isGreenBg);
+                client = new AvatarInstanceClient(this, request);
+                client.setEventCallback(this);
+                client.startInstance();
+                break;
+            }
+            case R.id.btn_stop: {
+                if (TextUtils.isEmpty(sessionId)) {
+                    showToast("sessionId为空，请先查询执行Query Instance");
+                    return;
+                }
+                client.stopInstance(this.sessionId);
+                break;
+            }
+            case R.id.btn_query:
+                AvatarInstanceResponse response = InstanceSharedPref.loadInstanceResponse(getApplicationContext());
+                queryInstance(response);
+                break;
+            case R.id.btn_toggle_config:
+                if (scrollView.getVisibility() == View.VISIBLE || clGreenBg.getVisibility() == View.VISIBLE) {
+                    btnToggleConfig.setText("显示配置列表");
+                    scrollView.setVisibility(View.GONE);
+                    clGreenBg.setVisibility(View.GONE);
+                } else {
+                    btnToggleConfig.setText("隐藏配置列表");
+                    if (rbDialog.isChecked()){
+                        scrollView.setVisibility(View.VISIBLE);
+                    }
+                    clGreenBg.setVisibility(View.VISIBLE);
+
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (isChecked) {
             switch (buttonView.getId()) {
                 case R.id.radioBroadcast:
-                    clInitConfig.setVisibility(View.GONE);
+                    scrollView.setVisibility(View.GONE);
                     break;
                 case R.id.radioDialog:
-                    clInitConfig.setVisibility(View.VISIBLE);
+                    scrollView.setVisibility(View.GONE);
                     break;
                 case R.id.rb_aec_none:
                     aecConfig = AvatarOptions.AEC_NONE;
@@ -307,6 +352,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case R.id.cb_custom_source:
                     isCustomSource = true;
+                    break;
+                case R.id.rb_green_bg_true:
+                    isGreenBg = true;
+                    break;
+                case R.id.rb_green_bg_false:
+                    isGreenBg = false;
                     break;
                 default:
                     break;

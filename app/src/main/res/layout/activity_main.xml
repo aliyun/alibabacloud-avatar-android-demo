@@ -34,7 +34,7 @@
             android:layout_width="300dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="30dp"
             android:background="@drawable/edit_text"
             android:hint="Access Key Id"
             android:paddingLeft="10dp"
@@ -101,137 +101,201 @@
         </RadioGroup>
 
 
+        <Button
+            android:id="@+id/btn_toggle_config"
+            android:layout_width="200dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="显示配置列表"
+            android:textColor="#FFFFFF" />
+
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/cl_config"
+            android:id="@+id/cl_greenbg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:paddingLeft="@dimen/dimen_10"
             android:paddingRight="@dimen/dimen_10">
 
             <TextView
+                android:id="@+id/tv_greenbg_config"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="默认配置"
-                app:layout_constraintBottom_toBottomOf="@id/cb_auto_start"
+                android:text="绿幕抠图"
+                app:layout_constraintBottom_toBottomOf="@id/rg_green_bg"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="@id/cb_auto_start" />
-
-            <CheckBox
-                android:id="@+id/cb_auto_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="启动后立即收音"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <CheckBox
-                android:id="@+id/cb_auto_douge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="音频闪避"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <CheckBox
-                android:id="@+id/cb_custom_source"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="自定义音源"
-                android:visibility="gone"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tv_sample_rate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="音频采样率"
-                app:layout_constraintBottom_toBottomOf="@id/rg_sample_rate"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cb_auto_start" />
+                app:layout_constraintTop_toTopOf="@+id/rg_green_bg" />
 
             <RadioGroup
-                android:id="@+id/rg_sample_rate"
+                android:id="@+id/rg_green_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
                 android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cb_auto_start">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <RadioButton
-                    android:id="@+id/rb_sample_16k"
+                    android:id="@+id/rb_green_bg_true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="开启" />
+
+                <RadioButton
+                    android:id="@+id/rb_green_bg_false"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="16000" />
-
-                <RadioButton
-                    android:id="@+id/rb_sample_8k"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="8000" />
+                    android:text="关闭" />
 
             </RadioGroup>
-
-            <TextView
-                android:id="@+id/tv_aec_config"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="AEC配置"
-                app:layout_constraintBottom_toBottomOf="@id/rg_aec_config"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rg_sample_rate" />
-
-            <RadioGroup
-                android:id="@+id/rg_aec_config"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="right"
-                android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@id/rg_sample_rate">
-
-                <RadioButton
-                    android:id="@+id/rb_aec_none"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="NONE" />
-
-                <RadioButton
-                    android:id="@+id/rb_aec_rtc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="RTC_AEC" />
-
-                <RadioButton
-                    android:id="@+id/rb_aec_system"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="SYSTEM_AEC" />
-
-            </RadioGroup>
-
-            <TextView
-                android:id="@+id/tv_interval"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="音频上传间隔(ms)"
-                app:layout_constraintBottom_toBottomOf="@id/et_interval"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/rg_aec_config" />
-
-            <EditText
-                android:id="@+id/et_interval"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:hint="0-1000"
-                android:inputType="number"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/rg_aec_config" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ScrollView
+            android:id="@+id/scrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_config"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/dimen_10"
+                android:paddingRight="@dimen/dimen_10">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="默认配置"
+                    app:layout_constraintBottom_toBottomOf="@id/cb_auto_start"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/cb_auto_start" />
+
+                <CheckBox
+                    android:id="@+id/cb_auto_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="启动后立即收音"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <CheckBox
+                    android:id="@+id/cb_auto_douge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="音频闪避"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <CheckBox
+                    android:id="@+id/cb_custom_source"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="自定义音源"
+                    android:visibility="gone"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_sample_rate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="音频采样率"
+                    app:layout_constraintBottom_toBottomOf="@id/rg_sample_rate"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cb_auto_start" />
+
+
+                <RadioGroup
+                    android:id="@+id/rg_sample_rate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:orientation="horizontal"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cb_auto_start">
+
+                    <RadioButton
+                        android:id="@+id/rb_sample_16k"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="16000" />
+
+                    <RadioButton
+                        android:id="@+id/rb_sample_8k"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8000" />
+
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/tv_aec_config"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AEC配置"
+                    app:layout_constraintBottom_toBottomOf="@id/rg_aec_config"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/rg_sample_rate" />
+
+                <RadioGroup
+                    android:id="@+id/rg_aec_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@id/rg_sample_rate">
+
+                    <RadioButton
+                        android:id="@+id/rb_aec_none"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NONE" />
+
+                    <RadioButton
+                        android:id="@+id/rb_aec_rtc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="RTC_AEC" />
+
+                    <RadioButton
+                        android:id="@+id/rb_aec_system"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="SYSTEM_AEC" />
+
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/tv_interval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="音频上传间隔(ms)"
+                    app:layout_constraintBottom_toBottomOf="@id/et_interval"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/rg_aec_config" />
+
+                <EditText
+                    android:id="@+id/et_interval"
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:hint="0-1000"
+                    android:inputType="number"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rg_aec_config" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
+
 
         <Button
             android:id="@+id/btn_start"

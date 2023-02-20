@@ -6,6 +6,7 @@ public class AvatarInstanceRequest {
 	private Long tenantId;
 	private String appId;
 	private String env;
+	private boolean alphaSwitch;
 
 	public String getAccessKeyId() {
 		return accessKeyId;
@@ -45,5 +46,13 @@ public class AvatarInstanceRequest {
 
 	public void setEnv(String env) {
 		this.env = env;
+	}
+
+	public boolean isAlphaSwitch() {
+		return alphaSwitch;
+	}
+
+	public void setAlphaSwitch(boolean alphaSwitch) {
+		this.alphaSwitch = alphaSwitch;
 	}
 }

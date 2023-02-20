@@ -153,7 +153,7 @@ public class AvatarInstanceClient {
         request.setTenantId(tenantId);
         request.setApp(new StartInstanceRequest.StartInstanceRequestApp().setAppId(appId));
         request.setUser(new StartInstanceRequest.StartInstanceRequestUser().setUserId("12345").setUserName("测试用户"));
-        request.setCommandRequest(new StartInstanceRequest.StartInstanceRequestCommandRequest().setAlphaSwitch(false));
+        request.setCommandRequest(new StartInstanceRequest.StartInstanceRequestCommandRequest().setAlphaSwitch(instanceRequest.isAlphaSwitch()));
         StartInstanceResponse response = client.startInstance(request);
 
         Log.d("StartInstanceResponse", JSONObject.toJSONString(response.body));
