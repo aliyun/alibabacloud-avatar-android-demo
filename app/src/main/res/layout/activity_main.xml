@@ -30,28 +30,16 @@
         android:orientation="vertical">
 
         <EditText
-            android:id="@+id/accessKeyIdTxt"
+            android:id="@+id/responseDataTxt"
             android:layout_width="300dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="30dp"
-            android:background="@drawable/edit_text"
-            android:hint="Access Key Id"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textColorHint="#80000000" />
-
-        <EditText
-            android:id="@+id/accessKeySecretTxt"
-            android:layout_width="300dp"
-            android:layout_height="50dp"
+            android:layout_height="200dp"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:background="@drawable/edit_text"
-            android:hint="Access Key Secret"
-            android:inputType="textPassword"
+            android:hint="StartInstanceResponseData"
             android:paddingLeft="10dp"
             android:textColorHint="#80000000" />
+
 
         <EditText
             android:id="@+id/tenantIdTxt"
@@ -274,6 +262,40 @@
 
                 </RadioGroup>
 
+
+                <TextView
+                    android:id="@+id/tv_decode_config"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="解码配置"
+                    app:layout_constraintBottom_toBottomOf="@id/rg_decode_config"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tv_aec_config" />
+
+                <RadioGroup
+                    android:id="@+id/rg_decode_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:orientation="horizontal"
+                    app:layout_constraintTop_toBottomOf="@id/rg_aec_config">
+
+                    <RadioButton
+                        android:id="@+id/rb_decode_hard"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="硬件解码" />
+
+                    <RadioButton
+                        android:id="@+id/rb_decode_soft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="软件解码" />
+
+
+                </RadioGroup>
+
                 <TextView
                     android:id="@+id/tv_interval"
                     android:layout_width="wrap_content"
@@ -281,7 +303,7 @@
                     android:text="音频上传间隔(ms)"
                     app:layout_constraintBottom_toBottomOf="@id/et_interval"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/rg_aec_config" />
+                    app:layout_constraintTop_toBottomOf="@id/rg_decode_config" />
 
                 <EditText
                     android:id="@+id/et_interval"
@@ -290,7 +312,7 @@
                     android:hint="0-1000"
                     android:inputType="number"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/rg_aec_config" />
+                    app:layout_constraintTop_toBottomOf="@+id/rg_decode_config" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -302,25 +324,7 @@
             android:layout_width="200dp"
             android:layout_height="50dp"
             android:layout_gravity="center"
-            android:text="Start Instance"
-            android:textColor="#FFFFFF"
-            android:visibility="visible" />
-
-        <Button
-            android:id="@+id/btn_stop"
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:text="Stop Instance"
-            android:textColor="#FFFFFF"
-            android:visibility="visible" />
-
-        <Button
-            android:id="@+id/btn_query"
-            android:layout_width="200dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:text="Query Instance"
+            android:text="加入房间"
             android:textColor="#FFFFFF"
             android:visibility="visible" />
 

@@ -1,38 +1,40 @@
 package com.aliyun.avatarsdksample.data;
 
-/**
- * Created by xbaoyuan on 2022/11/10
- *
- * @date 2022/11/10
- * Api : StartInstance
- * {@see "https://help.aliyun.com/document_detail/412625.html"}
- */
-public class StartInstanceData {
-    private String token;
-    private String sessionId;
-    private RtcData rtcData;
+public class StartInstanceData{
+	private String requestId;
+	private Channel channel;
+	private String sessionId;
+	private String token;
 
-    public String getToken() {
-        return token;
-    }
+	public void setRequestId(String requestId){
+		this.requestId = requestId;
+	}
 
-    public void setToken(String imToken) {
-        this.token = imToken;
-    }
+	public String getRequestId(){
+		return requestId;
+	}
 
-    public String getSessionId() {
-        return sessionId;
-    }
+	public void setChannel(Channel channel){
+		this.channel = channel;
+	}
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
+	public Channel getChannel(){
+		return channel;
+	}
 
-    public RtcData getChannel() {
-        return rtcData;
-    }
+	public void setSessionId(String sessionId){
+		this.sessionId = sessionId;
+	}
 
-    public void setChannel(RtcData rtcData) {
-        this.rtcData = rtcData;
-    }
+	public String getSessionId(){
+		return sessionId;
+	}
+
+	public void setToken(String token){
+		this.token = token;
+	}
+
+	public String getToken(){
+		return token;
+	}
 }

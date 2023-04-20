@@ -1,4 +1,4 @@
-package com.aliyun.avatarsdksample.openapi;
+package com.aliyun.avatarsdksample.data;
 
 import java.util.Arrays;
 
@@ -8,8 +8,6 @@ public class AvatarInstanceResponse {
 	private String message;
 	private String env;
 
-	private String accessKeyId;
-	private String accessKeySecret;
 	private Long tenantId;
 	private String appId;
 
@@ -57,22 +55,6 @@ public class AvatarInstanceResponse {
 
 	public void setEnv(String env) {
 		this.env = env;
-	}
-
-	public String getAccessKeyId() {
-		return accessKeyId;
-	}
-
-	public void setAccessKeyId(String accessKeyId) {
-		this.accessKeyId = accessKeyId;
-	}
-
-	public String getAccessKeySecret() {
-		return accessKeySecret;
-	}
-
-	public void setAccessKeySecret(String accessKeySecret) {
-		this.accessKeySecret = accessKeySecret;
 	}
 
 	public String getAppId() {

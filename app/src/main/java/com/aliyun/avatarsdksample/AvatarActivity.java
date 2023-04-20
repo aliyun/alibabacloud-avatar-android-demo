@@ -8,13 +8,13 @@ import static com.alivc.rtc.AliRtcEngine.AliRtcVideoTrack.AliRtcVideoTrackScreen
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -41,12 +41,9 @@ import com.aliyun.avatarsdk.rtc.AvatarRtcEngineNotify;
 import com.aliyun.avatarsdk.utils.FrameStats;
 import com.aliyun.avatarsdk.utils.VideoRecorder;
 import com.aliyun.avatarsdksample.data.ChartUserBean;
-import com.aliyun.avatarsdksample.openapi.AvatarInstanceClient;
-import com.aliyun.avatarsdksample.openapi.AvatarInstanceRequest;
-import com.aliyun.avatarsdksample.openapi.AvatarInstanceResponse;
-import com.aliyun.avatarsdksample.util.InstanceSharedPref;
 import com.aliyun.avatarsdksample.util.InstanceUtil;
 import com.aliyun.avatarsdksample.util.PermissionUtil;
+import com.aliyun.avatarsdksample.util.SharedPrefHelper;
 
 import org.webrtc.sdk.SophonSurfaceView;
 
@@ -60,8 +57,6 @@ public class AvatarActivity extends AppCompatActivity {
      * SDK提供的对音视频通话处理的引擎类
      */
     private AliRtcEngine mAliRtcEngine;
-    private AvatarInstanceRequest request;
-    private AvatarInstanceClient client;
     private TransparentSurfaceView surfaceView;
     private FrameStats renderFrameStats;
     private boolean isGreenBg;
@@ -84,7 +79,12 @@ public class AvatarActivity extends AppCompatActivity {
                 }
             });
             if (isGreenBg) {
-                updateRemoteDisplayByGreenBackground();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateRemoteDisplayByGreenBackground();
+                    }
+                });
             } else {
                 updateRemoteDisplay(uid, audioTrack, videoTrack);
             }
@@ -228,11 +228,20 @@ public class AvatarActivity extends AppCompatActivity {
     private void initAvatar() {
         Intent intent = getIntent();
         String response = intent.getStringExtra("response");
+        String appId = intent.getStringExtra("appid");
+        String tenantId = intent.getStringExtra("tenant");
         if (TextUtils.isEmpty(response)) {
             return;
         }
         int avatarType = intent.getIntExtra("avatarType", 0);
-        AvatarInstanceInfo avatarInstanceInfo = InstanceUtil.convertByAvatarInstanceResponse(response);
+        AvatarInstanceInfo avatarInstanceInfo = InstanceUtil.convertByAvatarInstanceResponseData(response);
+        avatarInstanceInfo.setAppId(appId);
+        avatarInstanceInfo.setTenantId(tenantId);
+
+        SharedPrefHelper.saveString(this,"response",response);
+        SharedPrefHelper.saveString(this,"appId",appId);
+        SharedPrefHelper.saveString(this,"tenantId",tenantId);
+
         Log.d(TAG, "avatarInstanceInfo : " + JSONObject.toJSONString(avatarInstanceInfo));
         Log.d(TAG, "avatarType " + avatarType);
         if (avatarType == 0) {
@@ -245,6 +254,8 @@ public class AvatarActivity extends AppCompatActivity {
     private void initAsDialogAvatar(AvatarInstanceInfo avatarInstanceInfo) {
         Intent intent = getIntent();
         int aecConfig = intent.getIntExtra("aecConfig", AvatarOptions.AEC_SYSTEM);
+        int decodeConfigInt = intent.getIntExtra("decodeConfig", 0);
+        AvatarOptions.DecodeMode decodeConfig = AvatarOptions.DecodeMode.values()[decodeConfigInt];
         int interval = intent.getIntExtra("interval", 100);
         int sampleRate = intent.getIntExtra("sampleRate", 16000);
         boolean isAutoStartRecord = intent.getBooleanExtra("isAutoStartRecord", true);
@@ -259,10 +270,21 @@ public class AvatarActivity extends AppCompatActivity {
         btnStart.setOnClickListener(v -> avatarSDK.startRecording());
         btnStop.setOnClickListener(v -> avatarSDK.stopRecording());
         Button btnSendMessage = findViewById(R.id.btn_send_message);
+        btnSendMessage.setText("文本互动");
         btnSendMessage.setVisibility(View.VISIBLE);
-        btnSendMessage.setOnClickListener(v -> sendMessage(avatarInstanceInfo));
+        btnSendMessage.setOnClickListener(v -> chatByText());
 
-        AvatarOptions options = new AvatarOptions.Builder().aecConfig(aecConfig).interval(interval).sampleRate(sampleRate).setMaxReconnectTimeout(120000).autoStartRecord(isAutoStartRecord).autoDodge(isAutoDodge).useCustomAudioSource(false).build();
+        AvatarOptions options = new AvatarOptions.Builder()
+                .aecConfig(aecConfig)
+                .decodeMode(decodeConfig)
+                .audioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
+                .interval(interval)
+                .sampleRate(sampleRate)
+                .setMaxReconnectTimeout(120000)
+                .autoStartRecord(isAutoStartRecord)
+                .autoDodge(isAutoDodge)
+                .useCustomAudioSource(false)
+                .build();
         stringBuffer.append("开始创建对话数字人...");
         stringBuffer.append("\n");
         stringBuffer.append("详细配置：");
@@ -270,9 +292,10 @@ public class AvatarActivity extends AppCompatActivity {
         stringBuffer.append("\n");
         avatarSDK = AvatarSDK.createDialogAvatarInstance(this, avatarSDKListener, avatarInstanceInfo, options);
         mAliRtcEngine = avatarSDK.getAliRtcEngine();
-        //设置视频裸数据回调事件
-        mAliRtcEngine.registerVideoSampleObserver(mVideoObserver);
-
+        if (isGreenBg) {
+            //设置视频裸数据回调事件
+            mAliRtcEngine.registerVideoSampleObserver(mVideoObserver);
+        }
         //本地用户行为回调，相当于AliRtcEngineEventListener，必须调用super.onOccurError(error, message); 否则AvatarSDK无法抛出RTC异常信息
         avatarSDK.setRtcEngineEventListener(new AvatarRtcEngineEventListener() {
             @Override
@@ -301,6 +324,18 @@ public class AvatarActivity extends AppCompatActivity {
             @Override
             public void onBye(int code) {
                 super.onBye(code);
+            }
+
+            @Override
+            public void onRtcRemoteVideoStats(AliRtcEngine.AliRtcRemoteVideoStats aliRtcStats) {
+                super.onRtcRemoteVideoStats(aliRtcStats);
+                if (!isGreenBg) {
+                    String mediaInfo = "remote video fps=" + aliRtcStats.decodeFps + ", width=" + aliRtcStats.width + ", height=" + aliRtcStats.height
+                            + ", render fps=" + aliRtcStats.renderFps + ", frozen times=" + aliRtcStats.frozenTimes;
+                    Log.i(TAG, mediaInfo);
+
+//                    runOnUiThread(() -> tvStatus.setText(mediaInfo));
+                }
             }
         });
 
@@ -411,6 +446,13 @@ public class AvatarActivity extends AppCompatActivity {
 
     }
 
+    private void chatByText() {
+        EditText etMessage = findViewById(R.id.et_message);
+        String msg = etMessage.getText().toString();
+        avatarSDK.sendMessage(msg);
+        etMessage.setText("");
+    }
+
     /**
      * 初始化播报数字人
      *
@@ -422,35 +464,20 @@ public class AvatarActivity extends AppCompatActivity {
         stringBuffer.append("开始创建播报数字人...");
         tvStatus.setText(stringBuffer);
         Button btnSendMessage = findViewById(R.id.btn_send_message);
-        btnSendMessage.setVisibility(View.VISIBLE);
-        btnSendMessage.setOnClickListener(v -> sendMessage(avatarInstanceInfo));
+        btnSendMessage.setVisibility(View.GONE);
+        EditText etMessage = findViewById(R.id.et_message);
+        //相关接口参考：https://help.aliyun.com/document_detail/412624.html
+        etMessage.setHint("请在后端应用调用SendMessage接口\n来播报指定文本");
+        etMessage.setEnabled(false);
         avatarSDK = AvatarSDK.createBroadcastAvatarInstance(this, avatarSDKListener, avatarInstanceInfo, null);
         mAliRtcEngine = avatarSDK.getAliRtcEngine();
-        //设置视频裸数据回调事件
-        mAliRtcEngine.registerVideoSampleObserver(mVideoObserver);
+        if (isGreenBg) {
+            //设置视频裸数据回调事件
+            mAliRtcEngine.registerVideoSampleObserver(mVideoObserver);
+        }
         avatarSDK.init();
     }
 
-    /**
-     * 调用OpenApi 接口，开始播报，仅供快速体验，不建议在实际项目中采用这种方式调用。
-     *
-     * @param avatarInstanceInfo
-     */
-    private void sendMessage(AvatarInstanceInfo avatarInstanceInfo) {
-        if (request == null) {
-            AvatarInstanceResponse responseCache = InstanceSharedPref.loadInstanceResponse(getApplicationContext());
-            request = new AvatarInstanceRequest();
-            request.setAccessKeyId(responseCache.getAccessKeyId());
-            request.setAccessKeySecret(responseCache.getAccessKeySecret());
-            request.settenantId(responseCache.getTenantId());
-            request.setAppId(responseCache.getAppId());
-            client = new AvatarInstanceClient(this, request);
-        }
-        EditText etMessage = findViewById(R.id.et_message);
-        String msg = etMessage.getText().toString();
-        client.sendMessage(msg, avatarInstanceInfo.getSessionId());
-        etMessage.setText("");
-    }
 
     /**** 接入数字人视频流开始，非绿幕抠图模式，采用AliRtc的最佳实践 ****/
 
@@ -513,7 +540,7 @@ public class AvatarActivity extends AppCompatActivity {
                     surfaceContainer.removeAllViews();
                 } else if (chartUserBean.mCameraSurface.getParent() == null) {
                     if (chartUserBean.mUserName.equals("avatar")) {
-                        RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(1080,1920);
+                        RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(1080, 1920);
                         layout.setMargins(0, 100, 0, 0);
                         chartUserBean.mCameraSurface.setLayoutParams(layout);
                         surfaceContainer.addView(chartUserBean.mCameraSurface);
@@ -593,14 +620,14 @@ public class AvatarActivity extends AppCompatActivity {
      */
     private void updateRemoteDisplayByGreenBackground() {
         surfaceView = new TransparentSurfaceView(AvatarActivity.this);
-        RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(1080,1920);
+        RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(1080, 1920);
         layout.setMargins(0, 100, 0, 0);
         surfaceView.setLayoutParams(layout);
         surfaceView.init();
 
         FrameLayout surfaceContainer = findViewById(R.id.surface_container);
         ImageView imageView = new ImageView(AvatarActivity.this);
-        FrameLayout.LayoutParams framelayoutParam = new FrameLayout.LayoutParams(1080,1920);
+        FrameLayout.LayoutParams framelayoutParam = new FrameLayout.LayoutParams(1080, 1920);
         framelayoutParam.setMargins(0, 100, 0, 0);
         imageView.setLayoutParams(framelayoutParam);
         imageView.setImageResource(R.drawable.bg);
@@ -620,8 +647,8 @@ public class AvatarActivity extends AppCompatActivity {
     private final AliRtcEngine.AliRtcVideoObserver mVideoObserver = new AliRtcEngine.AliRtcVideoObserver() {
         @Override
         public boolean onRemoteVideoSample(String callId, AliRtcEngine.AliRtcVideoSourceType sourceType, AliRtcEngine.AliRtcVideoSample videoSample) {
-//            Log.i(TAG, "onRemoteVideoSample, " + videoSample.format.getValue() + ", sourceType= " + sourceType.name() + ", width=" + videoSample.width + ", height=" + videoSample.height
-//                    + ", strideY=" + videoSample.strideY + ", strideU=" + videoSample.strideU + ", strideV=" + videoSample.strideV + ", size=" + videoSample.data.length);
+            Log.i(TAG, "onRemoteVideoSample, " + videoSample.format.getValue() + ", sourceType= " + sourceType.name() + ", width=" + videoSample.width + ", height=" + videoSample.height
+                    + ", strideY=" + videoSample.strideY + ", strideU=" + videoSample.strideU + ", strideV=" + videoSample.strideV + ", size=" + videoSample.data.length);
 
             long start = System.currentTimeMillis();
             if (surfaceView != null) {
